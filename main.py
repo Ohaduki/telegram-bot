@@ -9,6 +9,7 @@ from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, Messa
 from config import TELEGRAM_TOKEN
 from upload import upload
 from db import add_file
+from jobs import set_reminders, check_reminders, cancel_reminders
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -60,6 +61,9 @@ async def video(update: Update, context: ContextTypes.DEFAULT_TYPE):
 start_handler = CommandHandler('start', start)
 photo_handler = MessageHandler(filters=filters.PHOTO, callback=photo)
 video_handler = MessageHandler(filters=filters.VIDEO, callback=video)
+reminder_handler = CommandHandler('reminder', set_reminders)
+check_reminders_handler = CommandHandler('check_reminders', check_reminders)
+cancel_reminders_handler = CommandHandler('cancel_reminders', cancel_reminders)
 
 if __name__ == '__main__':
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
@@ -67,5 +71,8 @@ if __name__ == '__main__':
     application.add_handler(start_handler)
     application.add_handler(photo_handler)
     application.add_handler(video_handler)
+    application.add_handler(reminder_handler)
+    application.add_handler(check_reminders_handler)
+    application.add_handler(cancel_reminders_handler)
     
-    application.run_polling()
+    application.run_polling(allowed_updates=Update.ALL_TYPES)
