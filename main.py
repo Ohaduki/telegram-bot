@@ -1,7 +1,7 @@
 import logging
 import time
 
-from telegram import Update
+from telegram import Update, constants
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 
 from config import TELEGRAM_TOKEN
@@ -17,16 +17,28 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     file_id = update.message.photo[-1].file_id
     new_file = await context.bot.get_file(file_id)
+    extension = new_file.file_path.split(".")[-1]
     ts = time.time()
-    await new_file.download_to_drive(f"files//{ts}.jpg")
+    await new_file.download_to_drive(f"files//{ts}.{extension}")
+    caption = update.message.caption
+
+async def video(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    file_id = update.message.video.file_id
+    new_file = await context.bot.get_file(file_id)
+    extension = new_file.file_path.split(".")[-1]
+    ts = time.time()
+    await new_file.download_to_drive(f"files//{ts}.{extension}")
+    caption = update.message.caption
 
 start_handler = CommandHandler('start', start)
 photo_handler = MessageHandler(filters=filters.PHOTO, callback=photo)
+video_handler = MessageHandler(filters=filters.VIDEO, callback=video)
 
 if __name__ == '__main__':
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     
     application.add_handler(start_handler)
     application.add_handler(photo_handler)
+    application.add_handler(video_handler)
     
     application.run_polling()
